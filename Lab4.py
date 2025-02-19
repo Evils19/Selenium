@@ -1,7 +1,8 @@
-﻿from seleniumbase import SB
-import pandas as pd
+﻿import os
 import time
-import os
+
+import pandas as pd
+from seleniumbase import SB
 
 
 def citeste_idno(nume_fisier, foaie="Sheet1", coloana="IDNO"):
@@ -34,23 +35,69 @@ def salveaza_rezultat(rezultat, output_file):
         print(f"Eroare la salvarea rezultatului: {e}")
 
 
+# def hack_b2bhin():
+#     listCompany = citeste_idno(r"D:\Python\Selenium\IDNO.xlsx")
+#     output_file = "D:\\Python\\Selenium\\rezultate_scraping.xlsx"
+#
+#     # Începem de la poziția 669
+#     start_position = 1705
+#
+#     for i in range(start_position, len(listCompany)):
+#         url = f"https://b2bhint.com/ru/company/md/asociatia-liceului-teoretic-vasile-alecsandri-ba--{listCompany[i]}"
+#
+#         print(f"Procesăm poziția {i} din {len(listCompany)}")  # Adăugat pentru a urmări progresul
+#
+#         with SB(uc=True, test=True, locale_code="en") as sb:
+#             try:
+#                 sb.activate_cdp_mode(url)
+#                 sb.uc_gui_click_captcha()
+#                 sb.sleep(2)
+#                 sb.open(url)
+#                 sb.sleep(5)
+#
+#                 script = """
+#                 var element = document.evaluate(
+#                     "//dt[text()='Код административно-территориальной единицы']/following-sibling::dd",
+#                     document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
+#                 ).singleNodeValue;
+#                 if (element) { element.textContent.trim(); } else { '' }
+#                 """
+#                 value = sb.execute_script(script)
+#
+#                 rezultat_curent = {
+#                     'IDNO': listCompany[i],
+#                     'Administrative territorial unit code': value
+#                 }
+#
+#                 salveaza_rezultat(rezultat_curent, output_file)
+#                 print(f"Procesat cu succes: {listCompany[i]}: {value}")
+#
+#             except Exception as e:
+#                 rezultat_curent = {
+#                     'IDNO': listCompany[i],
+#                     'Administrative territorial unit code': f"Eroare: {str(e)}"
+#                 }
+#                 salveaza_rezultat(rezultat_curent, output_file)
+#                 print(f"Eroare la procesarea IDNO {listCompany[i]}: {e}")
+#
+#             time.sleep(2)
+#
+#     print(f"\nProcesarea s-a încheiat. Toate rezultatele au fost salvate în {output_file}")
+
+
 def hack_b2bhin():
     listCompany = citeste_idno(r"D:\Python\Selenium\IDNO.xlsx")
     output_file = "D:\\Python\\Selenium\\rezultate_scraping.xlsx"
 
-    # Începem de la poziția 669
     start_position = 1705
 
-    for i in range(start_position, len(listCompany)):
-        url = f"https://b2bhint.com/ru/company/md/asociatia-liceului-teoretic-vasile-alecsandri-ba--{listCompany[i]}"
+    # Inițializăm browserul o singură dată
+    with SB(uc=True, test=True, locale_code="en") as sb:
+        for i in range(start_position, len(listCompany)):
+            url = f"https://b2bhint.com/ru/company/md/asociatia-liceului-teoretic-vasile-alecsandri-ba--{listCompany[i]}"
+            print(f"Procesăm poziția {i} din {len(listCompany)}")
 
-        print(f"Procesăm poziția {i} din {len(listCompany)}")  # Adăugat pentru a urmări progresul
-
-        with SB(uc=True, test=True, locale_code="en") as sb:
             try:
-                sb.activate_cdp_mode(url)
-                sb.uc_gui_click_captcha()
-                sb.sleep(2)
                 sb.open(url)
                 sb.sleep(5)
 
@@ -59,7 +106,7 @@ def hack_b2bhin():
                     "//dt[text()='Код административно-территориальной единицы']/following-sibling::dd",
                     document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
                 ).singleNodeValue;
-                if (element) { element.textContent.trim(); } else { '' }
+                if (element) { return element.textContent.trim(); } else { return ''; }
                 """
                 value = sb.execute_script(script)
 
